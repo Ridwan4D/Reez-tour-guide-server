@@ -23,10 +23,15 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
+    const packageCollection = client.db("guideForTourist").collection("packages");
 
-
-
+    // ========================================   packages collection start    ========================================
+    app.get('/packages', async (req, res) => {
+      const result = await packageCollection.find().toArray();
+      res.send(result);
+    })
+    // ========================================   packages collection end    ========================================
 
 
 
@@ -42,10 +47,9 @@ run().catch(console.dir);
 
 
 app.get("/", (req, res) => {
-    res.send("Tour guid for tourist server is running")
+  res.send("Tour guid for tourist server is running")
 })
 
 app.listen(port, () => {
-    console.log(`Tour guid for tourist server is running
-     from: ${port}`);
+  console.log(`Tour guid server is running on: ${port}`);
 })
