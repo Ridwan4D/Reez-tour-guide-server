@@ -25,6 +25,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const packageCollection = client.db("guideForTourist").collection("packages");
+    const guideCollection = client.db("guideForTourist").collection("guides");
 
     // ========================================   packages collection start    ========================================
     app.get('/packages', async (req, res) => {
