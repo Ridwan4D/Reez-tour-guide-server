@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express')
 const cors = require('cors');
 require('dotenv').config()
 const app = express();
@@ -8,7 +8,7 @@ app.use(cors())
 app.use(express.json());
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_User}:${process.env.DB_pass}@cluster0.yyjvuyt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -26,20 +26,42 @@ async function run() {
     // await client.connect();
     const packageCollection = client.db("guideForTourist").collection("packages");
     const userCollection = client.db("guideForTourist").collection("users");
+    const wishCollection = client.db("guideForTourist").collection("wishlist");
 
     // ========================================   user collection start    ========================================
-    app.post('/users',async(req,res)=>{
+    app.post('/users', async (req, res) => {
       const user = req.body;
-      const query = {userEmail: user.userEmail}
+      const query = { userEmail: user.userEmail }
       const existingUser = await userCollection.findOne(query);
-      if(existingUser){
-        return res.send({message: "user already exist",insertedId: null})
+      if (existingUser) {
+        return res.send({ message: "user already exist", insertedId: null })
       }
       const result = await userCollection.insertOne(user);
       res.send(result);
     })
     // ========================================   user collection end    ========================================
 
+    // ========================================   wishlist collection start    ========================================
+    app.get("/wishlist", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email }
+      const result = await wishCollection.find(query).toArray();
+      res.send(result)
+    })
+
+    app.post('/wishlist', async (req, res) => {
+      const wishItem = req.body;
+      const result = await wishCollection.insertOne(wishItem);
+      res.send(result);
+    })
+
+    app.delete("/wishlist/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await wishCollection.deleteOne(query);
+      res.send(result);
+    })
+    // ========================================   wishlist collection end    ========================================
 
     // ========================================   packages collection start    ========================================
     app.get('/packages', async (req, res) => {
