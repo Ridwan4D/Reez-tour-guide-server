@@ -25,7 +25,21 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const packageCollection = client.db("guideForTourist").collection("packages");
-    const guideCollection = client.db("guideForTourist").collection("guides");
+    const userCollection = client.db("guideForTourist").collection("users");
+
+    // ========================================   user collection start    ========================================
+    app.post('/users',async(req,res)=>{
+      const user = req.body;
+      const query = {userEmail: user.userEmail}
+      const existingUser = await userCollection.findOne(query);
+      if(existingUser){
+        return res.send({message: "user already exist",insertedId: null})
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    })
+    // ========================================   user collection end    ========================================
+
 
     // ========================================   packages collection start    ========================================
     app.get('/packages', async (req, res) => {
