@@ -29,6 +29,11 @@ async function run() {
     const wishCollection = client.db("guideForTourist").collection("wishlist");
 
     // ========================================   user collection start    ========================================
+    app.get('/users', async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    })
+
     app.post('/users', async (req, res) => {
       const user = req.body;
       const query = { userEmail: user.userEmail }
@@ -39,6 +44,8 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     })
+
+    
     // ========================================   user collection end    ========================================
 
     // ========================================   wishlist collection start    ========================================
