@@ -28,6 +28,7 @@ async function run() {
     const packageCollection = client.db("guideForTourist").collection("packages");
     const userCollection = client.db("guideForTourist").collection("users");
     const wishCollection = client.db("guideForTourist").collection("wishlist");
+    const bookingCollection = client.db("guideForTourist").collection("bookings");
 
     // ========================================   jwt api start    ========================================
     app.post('/jwt', async (req, res) => {
@@ -52,6 +53,17 @@ async function run() {
         next()
       }) 
     }
+
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { userEmail: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "forbidden access" })
+      }
+      next();
+    }
     // ========================================   middle wares end    ========================================
     // ========================================   user collection start    ========================================
     app.get('/users', verifyToken, async (req, res) => {
@@ -59,18 +71,39 @@ async function run() {
       res.send(result);
     })
 
+    app.get("/guides", async (req, res) => {
+      const role = req.query.role;
+      const query = { role: role }
+      const result = await userCollection.find(query).toArray();
+      res.send(result)
+    })
+
     app.get('/users/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: "forbidden access" })
       }
-      const query = { email: email };
+      const query = { userEmail: email };
       const user = await userCollection.findOne(query);
       let admin = false;
       if (user) {
         admin = user?.role === 'admin'
       }
       res.send({ admin })
+    })
+
+    app.get('/users/guide/:email', verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" })
+      }
+      const query = { userEmail: email };
+      const user = await userCollection.findOne(query);
+      let guide = false;
+      if (user) {
+        guide = user?.role === 'guide'
+      }
+      res.send({ guide })
     })
 
     app.post('/users', async (req, res) => {
@@ -84,7 +117,7 @@ async function run() {
       res.send(result);
     })
 
-    app.patch("/users/admin/:id", async (req, res) => {
+    app.patch("/users/admin/:id",verifyToken, async (req, res) => {
       const id = req.params.id;
       const userInfo = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -126,7 +159,13 @@ async function run() {
       res.send(result);
     })
     // ========================================   wishlist collection end    ========================================
-
+    // ========================================   bookings collection start    ========================================
+    app.post('/bookings',async(req,res)=>{
+      const bookingItem = req.body;
+      const result = await bookingCollection.insertOne(bookingItem);
+      res.send(result);
+    })
+    // ========================================   bookings collection end    ========================================
     // ========================================   packages collection start    ========================================
     app.get('/packages', async (req, res) => {
       const result = await packageCollection.find().toArray();
