@@ -165,6 +165,12 @@ async function run() {
       const result = await bookingCollection.insertOne(bookingItem);
       res.send(result);
     })
+    app.get("/bookings", async (req, res) => {
+      const email = req.query.email;
+      const query = { userEmail: email }
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result)
+    })
     // ========================================   bookings collection end    ========================================
     // ========================================   packages collection start    ========================================
     app.get('/packages', async (req, res) => {
