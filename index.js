@@ -29,6 +29,7 @@ async function run() {
     const userCollection = client.db("guideForTourist").collection("users");
     const wishCollection = client.db("guideForTourist").collection("wishlist");
     const bookingCollection = client.db("guideForTourist").collection("bookings");
+    const storyCollection = client.db("guideForTourist").collection("stories");
 
     // ========================================   jwt api start    ========================================
     app.post('/jwt', async (req, res) => {
@@ -51,7 +52,7 @@ async function run() {
         }
         req.decoded = decoded;
         next()
-      }) 
+      })
     }
 
     const verifyAdmin = async (req, res, next) => {
@@ -117,7 +118,7 @@ async function run() {
       res.send(result);
     })
 
-    app.patch("/users/admin/:id",verifyToken, async (req, res) => {
+    app.patch("/users/admin/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const userInfo = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -137,7 +138,13 @@ async function run() {
       res.send(result);
     })
     // ========================================   user collection end    ========================================
-
+    // ========================================   story collection start    ========================================
+    app.post('/stories',async(req,res)=>{
+      const storyItem = req.body;
+      const result = await storyCollection.insertOne(storyItem);
+      res.send(result);
+    })
+    // ========================================   story collection end    ========================================
     // ========================================   wishlist collection start    ========================================
     app.get("/wishlist", async (req, res) => {
       const email = req.query.email;
@@ -160,7 +167,7 @@ async function run() {
     })
     // ========================================   wishlist collection end    ========================================
     // ========================================   bookings collection start    ========================================
-    app.post('/bookings',async(req,res)=>{
+    app.post('/bookings', async (req, res) => {
       const bookingItem = req.body;
       const result = await bookingCollection.insertOne(bookingItem);
       res.send(result);
@@ -170,6 +177,12 @@ async function run() {
       const query = { userEmail: email }
       const result = await bookingCollection.find(query).toArray();
       res.send(result)
+    })
+    app.delete("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
     })
     // ========================================   bookings collection end    ========================================
     // ========================================   packages collection start    ========================================
