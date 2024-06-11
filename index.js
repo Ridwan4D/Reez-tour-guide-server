@@ -139,6 +139,10 @@ async function run() {
     })
     // ========================================   user collection end    ========================================
     // ========================================   story collection start    ========================================
+    app.get('/allStories', async (req, res) => {
+      const result = await storyCollection.find().toArray();
+      res.send(result);
+    })
     app.get("/stories", async (req, res) => {
       const email = req.query.email;
       const query = { email: email }
