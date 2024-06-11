@@ -139,6 +139,12 @@ async function run() {
     })
     // ========================================   user collection end    ========================================
     // ========================================   story collection start    ========================================
+    app.get("/stories", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email }
+      const result = await storyCollection.find(query).toArray();
+      res.send(result)
+    })
     app.post('/stories',async(req,res)=>{
       const storyItem = req.body;
       const result = await storyCollection.insertOne(storyItem);
