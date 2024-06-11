@@ -195,16 +195,22 @@ async function run() {
     })
     // ========================================   wishlist collection end    ========================================
     // ========================================   bookings collection start    ========================================
-    app.post('/bookings', async (req, res) => {
-      const bookingItem = req.body;
-      const result = await bookingCollection.insertOne(bookingItem);
-      res.send(result);
-    })
     app.get("/bookings", async (req, res) => {
       const email = req.query.email;
       const query = { userEmail: email }
       const result = await bookingCollection.find(query).toArray();
       res.send(result)
+    })
+    app.get("/bookings/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { guideEmail: email }
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result)
+    })
+    app.post('/bookings', async (req, res) => {
+      const bookingItem = req.body;
+      const result = await bookingCollection.insertOne(bookingItem);
+      res.send(result);
     })
     app.delete("/bookings/:id", async (req, res) => {
       const id = req.params.id;
