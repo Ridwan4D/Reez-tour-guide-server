@@ -118,6 +118,24 @@ async function run() {
       res.send(result);
     })
 
+    app.put('/user/:email',verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const userInfo = req.body;
+      const filter = { userEmail: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          phone: userInfo.phone,
+          education: userInfo.education,
+          experience: userInfo.experience,
+          skill: userInfo.skill,
+          requested: userInfo.requested
+        }
+      }
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+      res.send(result)
+    })
+
     app.patch("/users/admin/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const userInfo = req.body;
@@ -149,7 +167,7 @@ async function run() {
       const result = await storyCollection.find(query).toArray();
       res.send(result)
     })
-    app.post('/stories',async(req,res)=>{
+    app.post('/stories', async (req, res) => {
       const storyItem = req.body;
       const result = await storyCollection.insertOne(storyItem);
       res.send(result);
