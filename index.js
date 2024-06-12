@@ -118,7 +118,7 @@ async function run() {
       res.send(result);
     })
 
-    app.put('/user/:email',verifyToken, async (req, res) => {
+    app.put('/user/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
       const userInfo = req.body;
       const filter = { userEmail: email };
@@ -129,20 +129,21 @@ async function run() {
           education: userInfo.education,
           experience: userInfo.experience,
           skill: userInfo.skill,
-          requested: userInfo.requested
+          requested: true,
         }
       }
       const result = await userCollection.updateOne(filter, updateDoc, options);
       res.send(result)
     })
 
-    app.patch("/users/admin/:id", verifyToken, async (req, res) => {
+    app.put("/users/admin/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const userInfo = req.body;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
-          role: userInfo.role
+          role: userInfo.role,
+          requested: userInfo.requested
         }
       };
       const result = await userCollection.updateOne(filter, updateDoc)
@@ -212,6 +213,19 @@ async function run() {
       const result = await bookingCollection.insertOne(bookingItem);
       res.send(result);
     })
+    app.patch('/bookings/:id', async (req, res) => {
+      const id = req.params.id
+      const bookingInfo = req.body;
+      console.log(id, bookingInfo);
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          status: bookingInfo?.status
+        }
+      };
+      const result = await bookingCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
     app.delete("/bookings/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
@@ -222,6 +236,11 @@ async function run() {
     // ========================================   packages collection start    ========================================
     app.get('/packages', async (req, res) => {
       const result = await packageCollection.find().toArray();
+      res.send(result);
+    })
+    app.post('/packages', async (req, res) => {
+      const packageInfo = req.body;
+      const result = await packageCollection.insertOne(packageInfo);
       res.send(result);
     })
     // ========================================   packages collection end    ========================================
