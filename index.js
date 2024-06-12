@@ -5,8 +5,16 @@ require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors())
 app.use(express.json());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://the-tour-guide-for-tourist.web.app",
+      "https://the-tour-guide-for-tourist.firebaseapp.com",
+    ]
+  })
+);
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -55,21 +63,17 @@ async function run() {
       })
     }
 
-    const verifyAdmin = async (req, res, next) => {
-      const email = req.decoded.email;
-      const query = { userEmail: email };
-      const user = await userCollection.findOne(query);
-      const isAdmin = user?.role === "admin";
-      if (!isAdmin) {
-        return res.status(403).send({ message: "forbidden access" })
-      }
-      next();
-    }
     // ========================================   middle wares end    ========================================
     // ========================================   user collection start    ========================================
     app.get('/users', verifyToken, async (req, res) => {
-      const result = await userCollection.find().toArray();
+    const page = parseInt(req.query.page);
+    const size = parseInt(req.query.size);
+      const result = await userCollection.find().skip(page*size).limit(size).toArray();
       res.send(result);
+    })
+    app.get('/usersCount', async (req, res) => {
+      const count = await userCollection.estimatedDocumentCount();
+      res.send({count});
     })
 
     app.get("/guides", async (req, res) => {
@@ -202,7 +206,7 @@ async function run() {
       const result = await bookingCollection.find(query).toArray();
       res.send(result)
     })
-    app.get("/bookings/:email", async (req, res) => {
+    app.get("/bookings/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { guideEmail: email }
       const result = await bookingCollection.find(query).toArray();
@@ -238,7 +242,7 @@ async function run() {
       const result = await packageCollection.find().toArray();
       res.send(result);
     })
-    app.post('/packages', async (req, res) => {
+    app.post('/packages', verifyToken, async (req, res) => {
       const packageInfo = req.body;
       const result = await packageCollection.insertOne(packageInfo);
       res.send(result);
@@ -248,7 +252,7 @@ async function run() {
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
