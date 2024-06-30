@@ -66,14 +66,14 @@ async function run() {
     // ========================================   middle wares end    ========================================
     // ========================================   user collection start    ========================================
     app.get('/users', verifyToken, async (req, res) => {
-    const page = parseInt(req.query.page);
-    const size = parseInt(req.query.size);
-      const result = await userCollection.find().skip(page*size).limit(size).toArray();
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      const result = await userCollection.find().skip(page * size).limit(size).toArray();
       res.send(result);
     })
     app.get('/usersCount', async (req, res) => {
       const count = await userCollection.estimatedDocumentCount();
-      res.send({count});
+      res.send({ count });
     })
 
     app.get("/guides", async (req, res) => {
@@ -246,6 +246,24 @@ async function run() {
       const packageInfo = req.body;
       const result = await packageCollection.insertOne(packageInfo);
       res.send(result);
+    })
+    app.put('/packages/:id', async (req, res) => {
+      const id = req.params.id
+      const packageInfo = req.body;
+      console.log(id, packageInfo);
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          tour_name: packageInfo.tour_name,
+          trip_type: packageInfo.trip_type,
+          price: packageInfo.price,
+          duration: packageInfo.duration,
+          tour_plan: packageInfo.tour_plan,
+          description: packageInfo.description,
+        }
+      };
+      const result = await packageCollection.updateOne(filter, updateDoc)
+      res.send(result)
     })
     // ========================================   packages collection end    ========================================
 
